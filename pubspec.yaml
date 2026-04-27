@@ -1,0 +1,30 @@
+name: xyroo_sensix
+description: DPI & Sensitivity Controller - XyrooSensix
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Shizuku integration (untuk Android)
+  # shizuku_api: ^1.0.0  # tambahkan manual jika tersedia
+  shared_preferences: ^2.2.2
+  url_launcher: ^6.2.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  # Fonts (opsional, tambahkan file .ttf di assets/fonts/)
+  # fonts:
+  #   - family: JetBrainsMono
+  #     fonts:
+  #       - asset: assets/fonts/jetbrainsmono.ttf
