@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'dart:async';
 
 void main() {
@@ -12,23 +11,16 @@ class XyrooSensixApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'XyrooSensix',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: const Color(0xFF0A0A0F),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFF00F5FF),
-          secondary: Color(0xFFFF006E),
-          surface: Color(0xFF111118),
-        ),
-        useMaterial3: true,
       ),
       home: const SplashScreen(),
     );
   }
 }
 
-// ─── SPLASH SCREEN ────────────────────────────────────────────────────────────
+// SPLASH
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
   @override
@@ -44,14 +36,19 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1800));
-    _fade = Tween<double>(begin: 0, end: 1).animate(
-        CurvedAnimation(parent: _ctrl, curve: const Interval(0, 0.6, curve: Curves.easeOut)));
-    _scale = Tween<double>(begin: 0.7, end: 1).animate(
-        CurvedAnimation(parent: _ctrl, curve: const Interval(0, 0.6, curve: Curves.elasticOut)));
+    _ctrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 1800));
+
+    _fade = Tween(begin: 0.0, end: 1.0).animate(_ctrl);
+    _scale = Tween(begin: 0.7, end: 1.0).animate(_ctrl);
+
     _ctrl.forward();
+
     Future.delayed(const Duration(seconds: 3), () {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ShizukuSetupScreen()));
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (_) => const ShizukuSetupScreen()));
     });
   }
 
@@ -64,12 +61,196 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0A0F),
       body: Center(
-        child: AnimatedBuilder(
-          animation: _ctrl,
-          builder: (_, __) => Opacity(
-            opacity: _fade.value,
+        child: Opacity(
+          opacity: _fade.value,
+          child: Transform.scale(
+            scale: _scale.value,
+            child: Text(
+              'XyrooSensix',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.w900,
+                foreground: Paint()
+                  ..shader = LinearGradient(
+                    colors: [Color(0xFF00F5FF), Color(0xFFFF006E)],
+                  ).createShader(
+                      const Rect.fromLTWH(0, 0, 220, 40)),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// SHIZUKU SCREEN
+class ShizukuSetupScreen extends StatefulWidget {
+  const ShizukuSetupScreen({super.key});
+  @override
+  State<ShizukuSetupScreen> createState() =>
+      _ShizukuSetupScreenState();
+}
+
+class _ShizukuSetupScreenState
+    extends State<ShizukuSetupScreen> {
+  bool connected = false;
+
+  void connect() {
+    setState(() => connected = true);
+    Future.delayed(const Duration(milliseconds: 800), () {
+      Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (_) => const MainScreen()));
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            const Text("Shizuku Setup"),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: connected ? null : connect,
+              child: Text(
+                  connected ? "Connecting..." : "Connect Shizuku"),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// MAIN
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+  @override
+  State<MainScreen> createState() =>
+      _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  int index = 0;
+
+  final pages = const [
+    DpiControllerPage(),
+    SensitivityPage(),
+    ScreenSizePage(),
+    SettingsPage(),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: pages[index],
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: index,
+        onDestinationSelected: (i) =>
+            setState(() => index = i),
+        destinations: const [
+          NavigationDestination(icon: Icon(Icons.tune), label: "DPI"),
+          NavigationDestination(icon: Icon(Icons.touch_app), label: "Sens"),
+          NavigationDestination(icon: Icon(Icons.aspect_ratio), label: "Screen"),
+          NavigationDestination(icon: Icon(Icons.settings), label: "Settings"),
+        ],
+      ),
+    );
+  }
+}
+
+// DPI
+class DpiControllerPage extends StatefulWidget {
+  const DpiControllerPage({super.key});
+  @override
+  State<DpiControllerPage> createState() =>
+      _DpiControllerPageState();
+}
+
+class _DpiControllerPageState
+    extends State<DpiControllerPage> {
+  double dpi = 400;
+
+  void apply() {}
+  void reset() {}
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        const _SectionLabel("Adjust DPI"),
+        Slider(
+          value: dpi,
+          min: 200,
+          max: 700,
+          onChanged: (v) => setState(() => dpi = v),
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: apply,
+                icon: const Icon(Icons.play_arrow),
+                label: const Text("Apply"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF00F5FF),
+                  foregroundColor: Colors.black,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: OutlinedButton(
+                onPressed: reset,
+                child: const Text("Reset"),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+// LABEL
+class _SectionLabel extends StatelessWidget {
+  final String text;
+  const _SectionLabel(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(text,
+        style: const TextStyle(
+            fontSize: 18, fontWeight: FontWeight.bold));
+  }
+}
+
+// EXTRA PAGES
+class SensitivityPage extends StatelessWidget {
+  const SensitivityPage({super.key});
+  @override
+  Widget build(BuildContext context) =>
+      const Center(child: Text("Sensitivity"));
+}
+
+class ScreenSizePage extends StatelessWidget {
+  const ScreenSizePage({super.key});
+  @override
+  Widget build(BuildContext context) =>
+      const Center(child: Text("Screen Size"));
+}
+
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
+  @override
+  Widget build(BuildContext context) =>
+      const Center(child: Text("Settings"));
+}            opacity: _fade.value,
             child: Transform.scale(
               scale: _scale.value,
               child: Column(
